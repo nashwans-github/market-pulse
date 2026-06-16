@@ -26,10 +26,11 @@ The application blends **local machine learning (fast & resource-friendly)** for
 ### 4. Hybrid Sentiment Engine
 * **Train-on-the-Fly**: If the uploaded dataset contains a rating column, the system automatically trains a fresh **TF-IDF + Logistic Regression** classification model tailored to that specific product domain.
 * **Fallback Mode**: If no ratings are present, the app seamlessly falls back to a pre-trained base model.
-* **Rule-Based Correction**: Reconciles conflicts between ML predictions and customer star ratings:
-  * Rating $\le$ 2 automatically overrides the prediction to **Negative**.
-  * Rating $\ge$ 4 automatically overrides the prediction to **Positive**.
-  * Rating 3 sets the sentiment to **Neutral**.
+* **Context-Aware Preprocessing**: Preprocesses text by retaining negation words (*not, no, tidak, kurang*) to prevent reversing sentiment labels.
+* **N-grams Optimization (1, 3)**: Extracts unigrams, bigrams, and trigrams in the TF-IDF vectorizer to capture multi-word sentiment cues like *"not very good"*.
+* **Soft Weighted Ensemble Layer**: Blends the text probability ($P_{\text{text}}$, 60% weight) from the ML model with a prior probability based on the star rating ($P_{\text{rating}}$, 40% weight) to produce a combined confidence score:
+  * Rating prior mapping: 1 Star = 0.10, 2 Stars = 0.25, 3 Stars = 0.50, 4 Stars = 0.75, 5 Stars = 0.90.
+  * Sentiment thresholds: $\ge 0.60$ is classified as **Positive**, $\le 0.40$ is classified as **Negative**, and values in-between are classified as **Neutral**.
 
 ### 5. PostgreSQL & Export Integration
 * Export analyzed datasets with predicted sentiment labels directly as a `.csv` file.
@@ -37,7 +38,12 @@ The application blends **local machine learning (fast & resource-friendly)** for
 
 ### 6. AI Business Consultant (RAG)
 * Ask business questions (e.g., *"Why are customers leaving negative reviews about shipping?"*) in plain language.
-* **TF-IDF Cosine RAG**: The app searches the dataset locally and retrieves the 15 most relevant reviews.
+* **Dual Search Methods**:
+  * **Keyword Search (TF-IDF)**: Matches literal keyword overlaps in reviews. Extremely fast.
+  * **Two-Stage Semantic Search (MiniLM)**:
+    1. **Lexical Candidate Filtering**: Runs TF-IDF with bilingual query expansion (e.g. mapping Indonesian terms like *"kualitas"* to English *"quality"*) to extract the top 100 candidate reviews.
+    2. **Semantic Re-ranking**: Uses `paraphrase-multilingual-MiniLM-L12-v2` Sentence Transformers to embed and re-rank only these 100 candidates. This prevents CPU hangs, reducing execution time from 15 minutes to **~3 seconds**.
+* **Background Preloading**: Loads the embedding model asynchronously in a background thread when the app starts, preventing the UI from freezing when the first semantic query is made.
 * **Report Generation**: Passes this context to **Google Gemini** to draft a structured report with:
   * **Executive Summary** (Key findings and dataset context)
   * **Pain Points** (Key issues complete with direct customer quotes)
@@ -53,6 +59,7 @@ The application blends **local machine learning (fast & resource-friendly)** for
 * **Visualization**: `plotly-express`
 * **Data Manipulation**: `pandas`, `numpy`
 * **Machine Learning**: `scikit-learn` (Logistic Regression, TF-IDF Vectorizer)
+* **Sentence Embeddings**: `sentence-transformers` (`paraphrase-multilingual-MiniLM-L12-v2`)
 * **Generative AI**: `google-genai` SDK
 * **Database**: `psycopg2-binary` (PostgreSQL Connector)
 
@@ -107,5 +114,6 @@ market-pulse/
 │
 └── models/
     ├── model_sentimen.pkl      # Pre-trained base Logistic Regression model
-    └── vectorizer.pkl          # Pre-trained TF-IDF Vectorizer
+    ├── vectorizer.pkl          # Pre-trained TF-IDF Vectorizer
+    └── embeddings_*.npy        # Cached vector embeddings for dataset semantic search
 ```

@@ -18,6 +18,7 @@ env/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
+system_design.md
 
 # OS files
 .DS_Store

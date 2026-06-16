@@ -6,6 +6,9 @@ import modules.ai_consultant as aic
 import modules.upload_processor as up
 import modules.ml_pipeline as mlp
 
+# Mulai preloading model sentence-transformer di background thread agar tidak menghambat UI
+aic.start_model_preloading()
+
 # 1. Konfigurasi Halaman Dashboard (Wide Mode & Tema Dasar)
 st.set_page_config(page_title="Market-Pulse Dashboard", layout="wide", page_icon="📊")
 
