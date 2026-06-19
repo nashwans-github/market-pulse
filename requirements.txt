@@ -8,3 +8,4 @@ google-genai
 openpyxl
 folium
 streamlit-folium
+sentence-transformers

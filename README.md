@@ -52,12 +52,16 @@ The application blends **local machine learning (fast & resource-friendly)** for
 * **Pre-flight Guardrail**: Rejects off-topic prompts (like coding questions or general knowledge) locally before calling the Gemini API to prevent unnecessary token usage.
 * **Hallucination Guard**: Uses local quote matching and keyword overlap calculations to verify if the AI's report is grounded in the retrieved customer reviews, displaying a warning if the report strays from the actual data.
 
+### 7. Interactive Location Map
+* **Developer Campus Pinpoint**: Displays an interactive geographic map powered by Folium at the bottom of the dashboard, showing the location of the developer's campus in Surabaya.
+
 ---
 
 ## 🛠️ Tech Stack & Libraries
 
 * **Frontend & UI**: `streamlit` (v1.32.0+)
 * **Visualization**: `plotly-express`
+* **Geographic Mapping**: `folium`, `streamlit-folium`
 * **Data Manipulation**: `pandas`, `numpy`
 * **Machine Learning**: `scikit-learn` (Logistic Regression, TF-IDF Vectorizer)
 * **Embeddings & NLP**: `sentence-transformers` (MiniLM L12), `torch`
